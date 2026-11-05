@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+  <title>Pocket GP</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- The game world, HUD and countdown are all drawn on this canvas -->
+  <canvas id="game"></canvas>
+
+  <!-- Hidden element used to measure env(safe-area-inset-*) in pixels -->
+  <div id="safe-probe" aria-hidden="true"></div>
+
+  <!-- In-race UI: pause button + touch controls -->
+  <div id="race-ui" class="hidden">
+    <button id="btn-pause" class="hud-btn" aria-label="Pause"><i></i><i></i></button>
+    <div id="controls">
+      <div id="btn-left" class="ctrl steer" aria-label="Steer left">
+        <svg viewBox="0 0 40 40"><path d="M26 8 L12 20 L26 32 Z"/></svg>
+      </div>
+      <div id="btn-right" class="ctrl steer" aria-label="Steer right">
+        <svg viewBox="0 0 40 40"><path d="M14 8 L28 20 L14 32 Z"/></svg>
+      </div>
+      <div id="btn-brake" class="ctrl brake" aria-label="Brake">
+        <div class="ribs"><i></i><i></i><i></i><i></i></div>
+        <span>BRAKE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main menu (an AI demo race runs behind it) -->
+  <section id="screen-menu" class="screen active">
+    <div class="menu-inner">
+      <h1 class="logo">POCKET<span>GP</span></h1>
+      <p class="tagline">30 cars &middot; 15 tracks &middot; 3 laps</p>
+      <button id="btn-play" class="btn primary big">PLAY</button>
+      <div class="menu-options">
+        <button id="opt-fps" class="btn toggle">FPS counter: <b>OFF</b></button>
+        <button id="opt-vibe" class="btn toggle">Vibration: <b>ON</b></button>
+      </div>
+      <p class="hint">Your car accelerates by itself.<br>Steer with &#9664; &#9654; &mdash; hold the pedal to brake.<br><span class="desktop-hint">Keyboard: arrows to steer, Space to brake, P to pause.</span></p>
+    </div>
+  </section>
+
+  <!-- Car selection -->
+  <section id="screen-cars" class="screen panel">
+    <header class="screen-head">
+      <button class="btn back" data-goto="menu" aria-label="Back">&#8249;</button>
+      <h2>Choose your car</h2>
+    </header>
+    <div id="car-grid" class="grid scroll"></div>
+    <footer class="screen-foot">
+      <div id="car-summary" class="summary"></div>
+      <button id="btn-cars-next" class="btn primary">Next &#8250;</button>
+    </footer>
+  </section>
+
+  <!-- Track selection -->
+  <section id="screen-tracks" class="screen panel">
+    <header class="screen-head">
+      <button class="btn back" data-goto="cars" aria-label="Back">&#8249;</button>
+      <h2>Choose a track</h2>
+    </header>
+    <div id="track-grid" class="grid scroll"></div>
+    <footer class="screen-foot">
+      <div id="track-summary" class="summary"></div>
+      <button id="btn-tracks-next" class="btn primary">Race! &#8250;</button>
+    </footer>
+  </section>
+
+  <!-- Pause -->
+  <section id="screen-pause" class="screen modal">
+    <div class="modal-box">
+      <h2>Paused</h2>
+      <button id="btn-resume" class="btn primary">Resume</button>
+      <button id="btn-restart" class="btn">Restart</button>
+      <button id="btn-quit" class="btn">Quit to menu</button>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section id="screen-results" class="screen modal">
+    <div class="modal-box results">
+      <p id="res-track" class="res-track"></p>
+      <div id="res-pos" class="res-pos"></div>
+      <div class="res-rows">
+        <div class="res-row"><span>Total time</span><b id="res-total"></b></div>
+        <div class="res-row"><span>Best lap</span><b id="res-best"></b></div>
+        <div class="res-row"><span>Track record</span><b id="res-record"></b></div>
+      </div>
+      <div id="res-new" class="badge hidden">NEW TRACK RECORD!</div>
+      <ol id="res-standings" class="standings"></ol>
+      <button id="btn-again" class="btn primary">Race again</button>
+      <div class="btn-row">
+        <button id="btn-change-car" class="btn">Change car</button>
+        <button id="btn-change-track" class="btn">Change track</button>
+      </div>
+      <button id="btn-menu" class="btn ghost">Main menu</button>
+    </div>
+  </section>
+
+  <!-- Landscape warning (touch devices only) -->
+  <div id="rotate-overlay">
+    <div class="phone"></div>
+    <p>Please rotate your phone<br>to portrait</p>
+  </div>
+
+  <!-- Classic scripts (no modules) so the game also runs from file:// -->
+  <script src="js/cars.js"></script>
+  <script src="js/tracks.js"></script>
+  <script src="js/physics.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/race.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
