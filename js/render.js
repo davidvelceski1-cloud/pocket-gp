@@ -656,9 +656,14 @@ const Renderer = {
       cam.zoom = Math.min(W, 520) / 360;
     }
     cam.x = fx; cam.y = fy;
+    // Turn the shortest way to the car's heading. cam.angle is kept in
+    // (-PI, PI]: a closed track adds a full turn every lap, and letting it
+    // pile up made the one-step wrap above fail, spinning the camera 360°.
     let ca = fa - cam.angle;
-    if (ca > Math.PI) ca -= Math.PI * 2; else if (ca < -Math.PI) ca += Math.PI * 2;
+    ca -= Math.PI * 2 * Math.round(ca / (Math.PI * 2));
     cam.angle += ca * (1 - Math.exp(-7 * frameDt));
+    if (cam.angle > Math.PI) cam.angle -= Math.PI * 2;
+    else if (cam.angle <= -Math.PI) cam.angle += Math.PI * 2;
     const spd = f.speed > 0 ? f.speed : 0;
     const targetZoom = Math.min(W, 520) / (340 + spd * 0.32);
     cam.zoom += (targetZoom - cam.zoom) * (1 - Math.exp(-2.5 * frameDt));
