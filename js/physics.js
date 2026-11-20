@@ -31,6 +31,9 @@ const PHYS = {
   collisionSpeedLoss: 0.0008, // fraction of speed lost per unit of impact (max 25%)
   trackSearch: 24,         // samples searched around the last known position
   worldMargin: 260,        // cars can't drive further than this outside the track bounds
+  wallOffset: 40,          // invisible walls stand this far outside the road edge (end of the run-off)
+  wallBounce: 0.25,        // fraction of the speed into a wall that bounces back
+  wallSpeedLoss: 0.0015,   // fraction of speed lost per unit of impact (max 30%)
 };
 
 /** Create a car state object (called only when setting up a race). */
@@ -49,6 +52,7 @@ function createCar(carIndex, isPlayer) {
     lap: 0, lapStart: 0, lastLap: 0, bestLap: Infinity,
     finished: false, finishTime: 0, position: 1,
     wrongWay: 0,
+    wallHit: 0,                    // speed into a wall this step (for vibration)
     ai: null,
   };
 }
@@ -114,6 +118,34 @@ function stepCar(c, track, dt) {
   else if (c.y > track.maxY + m) { c.y = track.maxY + m; c.vy = 0; }
 
   queryTrack(c, track);
+  applyWalls(c, track);
+}
+
+/**
+ * Invisible walls at the outer edge of the run-off, so cars can run wide
+ * onto the gravel but can't cut across the infield to a later part of the
+ * lap. The wall follows the centre-line sample the car is tracking, which
+ * only moves locally, so it can't jump to a neighbouring section of track.
+ */
+function applyWalls(c, track) {
+  c.wallHit = 0;
+  const wall = track.halfWidth + PHYS.wallOffset;
+  const lat = c.trackLat;
+  if (lat <= wall && lat >= -wall) return;
+  const side = lat > 0 ? 1 : -1;
+  const nx = track.nx[c.trackIdx] * side, ny = track.ny[c.trackIdx] * side; // outward normal
+  const over = lat * side - wall;
+  c.x -= nx * over; c.y -= ny * over;
+  c.trackLat = wall * side;
+  const vn = c.vx * nx + c.vy * ny; // speed into the wall
+  if (vn > 0) {
+    c.vx -= nx * vn * (1 + PHYS.wallBounce);
+    c.vy -= ny * vn * (1 + PHYS.wallBounce);
+    let loss = vn * PHYS.wallSpeedLoss;
+    if (loss > 0.3) loss = 0.3;
+    c.vx *= 1 - loss; c.vy *= 1 - loss;
+    c.wallHit = vn;
+  }
 }
 
 /** Find the nearest centre-line sample (local search around the last one) and set offTrack. */

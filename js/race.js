@@ -132,7 +132,10 @@ const Race = {
         updateAI(c, track, cars, dt, this.time);
       }
     }
-    for (let i = 0; i < cars.length; i++) stepCar(cars[i], track, dt);
+    for (let i = 0; i < cars.length; i++) {
+      stepCar(cars[i], track, dt);
+      if (cars[i].isPlayer && cars[i].wallHit > 0 && this.onImpact) this.onImpact(cars[i].wallHit);
+    }
     collideCars(cars, this.onImpact);
     for (let i = 0; i < cars.length; i++) this.progress(cars[i], dt);
     this.updatePositions();
